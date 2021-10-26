@@ -31,13 +31,11 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-package One_To_Eight_Demux is new work.array_of_vector_pkg
-    generic map(arraysize => 8, bitlength => 4);
-
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.One_To_Eight_Demux.all;
+use work.vector_array.all;
+use IEEE.NUMERIC_STD.ALL;
 
 entity demux is
     
@@ -62,11 +60,15 @@ begin
     process
         begin
         
-        --set logic vector != selector to 0
-        for i in integer(arraysize - 1) downto 0 loop
         
-            if (i = integer(selector)) then
-                data_out(integer(selector)) <= data_in;
+        --set logic vector != selector to 0
+        for i in (arraysize - 1) downto 0 loop
+        
+            if (i = to_integer(unsigned(selector))) then
+                --the following line probably causes issues if data in is not the same length as data out
+                --figure out how to incorporate others statement
+                data_out(to_integer(unsigned(selector))) <= ( (bitlength - 1) downto 0 => data_in,
+                                                              others => '0');
             else 
                 data_out(i) <= "0000";  
             end if;

@@ -29,3 +29,6 @@ package array_of_vector_pkg is
 
 end package;
 
+package vector_array is new work.array_of_vector_pkg
+    generic map(arraysize => 8, bitlength => 4);
+
