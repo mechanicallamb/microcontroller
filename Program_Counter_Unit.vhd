@@ -40,7 +40,7 @@ entity Program_Counter_Unit is
         clk : in std_logic;
         
         ready : out std_logic;
-        next_addr : out std_logic_vector(7 downto 0);
+        next_addr : out std_logic_vector(7 downto 0)
     
     );
     
