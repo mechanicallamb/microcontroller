@@ -43,7 +43,7 @@ entity mux is
     
     port(
         
-        data_in : in array_of_vect;
+        data_in : in array_of_vect; --this is not defined(?)
         selector : in std_logic_vector((selectorlength - 1) downto 0);
         
         data_out : out std_logic_vector((datalength - 1) downto 0)
