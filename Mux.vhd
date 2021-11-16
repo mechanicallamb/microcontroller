@@ -21,10 +21,6 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
-
-package Eight_To_One_Mux is new work.array_of_vector_pkg
-    generic map(arraysize => 8, bitlength => 4);
     
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -37,8 +33,8 @@ package Eight_To_One_Mux is new work.array_of_vector_pkg
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.Eight_To_One_Mux.all;
-
+use work.vector_array.all;
+use ieee.numeric_std.all;
 
 entity mux is
 
@@ -47,7 +43,7 @@ entity mux is
     
     port(
         
-        data_in : in array_of_vect;
+        data_in : in array_of_vect; --this is not defined(?)
         selector : in std_logic_vector((selectorlength - 1) downto 0);
         
         data_out : out std_logic_vector((datalength - 1) downto 0)
@@ -62,7 +58,7 @@ begin
     process
         begin 
         
-            data_out <= data_in(integer(selector));
+            data_out <= data_in(to_integer(unsigned(selector)));
             
     end process;
 
