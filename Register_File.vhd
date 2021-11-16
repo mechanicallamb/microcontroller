@@ -53,7 +53,7 @@ end Register_File;
 
 architecture Behavioral of Register_File is
     
-    use work.Eight_To_One_Mux.all;
+ 
     
     --components--
     component reg is
@@ -61,13 +61,13 @@ architecture Behavioral of Register_File is
         port(
             data_in : in std_logic_vector((bitlength - 1) downto 0);
             data_out : out std_logic_vector((bitlength - 1) downto 0);
-            reset : in std_logic;
+            asyn_reset : in std_logic;
             enable : in std_logic;
             clk : in std_logic      
             );
     end component reg;
     
-    
+    use work.vector_array.all;
     component mux is 
     
         generic(datalength : integer;
@@ -81,7 +81,7 @@ architecture Behavioral of Register_File is
     
     end component mux;
     
-    
+   
     component demux is
         
         generic(datalength : integer;
@@ -108,7 +108,7 @@ begin
             data_in => data_in_demux_to_regs(I),
             data_out => data_from_regs_to_mux(I),
             clk => clk_regfile,
-            reset => reset_regfile,
+            asyn_reset => reset_regfile,
             enable => enableSignals(I)
             
         );

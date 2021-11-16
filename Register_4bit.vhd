@@ -56,23 +56,21 @@ signal reg_value : std_logic_vector((bitlength - 1) downto 0);
 
 begin
     
-    process(rising_edge(clk))
+    process(clk, asyn_reset)
         begin
         
-            if enable = '1' then
+            if asyn_reset then
+               
+                reg_value <= "0000";
+                data_out <= reg_value;
+            end if;
+            
+            if rising_edge(clk) and enable = '1' and asyn_reset = '0' then
                 
                 reg_value <= data_in;
                 data_out <= reg_value;
                 
             end if;
-            
-    end process;
-    
-    process(asyn_reset)
-        begin
-            
-            reg_value <= "0000";
-            data_out <= reg_value;
             
     end process;
 
