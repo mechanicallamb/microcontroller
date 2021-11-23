@@ -41,67 +41,67 @@ end entity;
 
 architecture ALUArch of ALU_DATAPATH is
 
-component Register_File is 
+	component Register_File is 
 
-	port(
-	
-	Destination_Data : in std_logic_vector(3 downto 0);
-        Destination_Address : in std_logic_vector(2 downto 0);
-        
-        Register_A_Address : in std_logic_vector(2 downto 0);
-        Register_B_Address : in std_logic_vector(2 downto 0);
-        
-        clk_regfile : in std_logic;
-        reset_regfile : in std_logic;
-        read_write : in std_logic; --write on 1
-        
-        Out_Data_A : out std_logic_vector(3 downto 0);
-        Out_Data_B : out std_logic_vector(3 downto 0)
-	
-	);
+		port(
 
+		Destination_Data : in std_logic_vector(3 downto 0);
+		Destination_Address : in std_logic_vector(2 downto 0);
 
-end component;
+		Register_A_Address : in std_logic_vector(2 downto 0);
+		Register_B_Address : in std_logic_vector(2 downto 0);
+
+		clk_regfile : in std_logic;
+		reset_regfile : in std_logic;
+		read_write : in std_logic; --write on 1
+
+		Out_Data_A : out std_logic_vector(3 downto 0);
+		Out_Data_B : out std_logic_vector(3 downto 0)
+
+		);
 
 
-use work.vector_array_d4w2.all;
-component Mux is 
-
-	generic(datalength : integer;
-			selectorlength : integer);
-			
-			
-	port(
-	
-	data_in : in array_of_vect; --this is not defined(?)
-        selector : in std_logic_vector((selectorlength - 1) downto 0);
-        
-        data_out : out std_logic_vector((datalength - 1) downto 0)
-	
-	);
-
-end component;
+	end component;
 
 
+	use work.vector_array_d4w2.all;
+	component Mux is 
 
-component Functional_Unit is
-
-	 generic(operandLength : integer;
-            opcodeLength : integer;
-            numFunctions : integer);
-    
-    port(
-    
-        valA : in std_logic_vector((operandLength - 1) downto 0);
-        const : in std_logic_vector((operandLength - 1) downto 0);
-        opcode : in std_logic_vector((opcodeLength - 1) downto 0);
-        
-        outVal : out std_logic_vector((operandLength - 1) downto 0);
-        poszeroneg : out std_logic_vector(2 downto 0)
-    );
+		generic(datalength : integer;
+				selectorlength : integer);
 
 
-end component;
+		port(
+
+		data_in : in array_of_vect; --this is not defined(?)
+		selector : in std_logic_vector((selectorlength - 1) downto 0);
+
+		data_out : out std_logic_vector((datalength - 1) downto 0)
+
+		);
+
+	end component;
+
+
+
+	component Functional_Unit is
+
+		 generic(operandLength : integer;
+		    opcodeLength : integer;
+		    numFunctions : integer);
+
+	    port(
+
+		valA : in std_logic_vector((operandLength - 1) downto 0);
+		const : in std_logic_vector((operandLength - 1) downto 0);
+		opcode : in std_logic_vector((opcodeLength - 1) downto 0);
+
+		outVal : out std_logic_vector((operandLength - 1) downto 0);
+		poszeroneg : out std_logic_vector(2 downto 0)
+	    );
+
+
+	end component;
 
 
 begin
