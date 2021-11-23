@@ -4,11 +4,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity ALU_DATAPATH is
 
-	generic(
-	
-	
-	
-	);
   
   port(
   
@@ -35,7 +30,7 @@ entity ALU_DATAPATH is
    
    addrOut : out std_logic_vector(3 downto 0);
    dataOut : out std_logic_vector(3 downto 0);
-   PZN : out std_logic_vector(2 downto 0); --output is Positive, Zero, or Negative
+   PZN : out std_logic_vector(2 downto 0) --output is Positive, Zero, or Negative
    
    
    
@@ -50,7 +45,7 @@ component Register_File is
 
 	port(
 	
-		Destination_Data : in std_logic_vector(3 downto 0);
+	Destination_Data : in std_logic_vector(3 downto 0);
         Destination_Address : in std_logic_vector(2 downto 0);
         
         Register_A_Address : in std_logic_vector(2 downto 0);
@@ -78,7 +73,7 @@ component Mux is
 			
 	port(
 	
-		data_in : in array_of_vect; --this is not defined(?)
+	data_in : in array_of_vect; --this is not defined(?)
         selector : in std_logic_vector((selectorlength - 1) downto 0);
         
         data_out : out std_logic_vector((datalength - 1) downto 0)
