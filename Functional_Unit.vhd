@@ -40,7 +40,7 @@ entity Functional_Unit is
     port(
     
         valA : in std_logic_vector((operandLength - 1) downto 0);
-        const : in std_logic_vector((operandLength - 1) downto 0);
+        valB : in std_logic_vector((operandLength - 1) downto 0);
         opcode : in std_logic_vector((opcodeLength - 1) downto 0);
         
         outVal : out std_logic_vector((operandLength - 1) downto 0);
@@ -152,7 +152,7 @@ begin
                                 port map(
                                           
                                          operandA => "0000",
-                                         operandB => const,
+                                         operandB => valB,
                                          output => (0=> funcConstisZ,
                                                     others => '0')
 
@@ -181,7 +181,7 @@ begin
                             port map(
                             
                                     operandA => valA,
-                                    operandB => const,
+                                    operandB => valB,
                                     
                                     output => (0 => funcAisConst,
                                                others => '0')
@@ -196,6 +196,7 @@ begin
                                 operandA => muxToOut,
                                 operandB => "0000",
                                 
+                                --what a dumb way to have to assign things
                                 output => ((2 downto 0) => poszeroneg,
                                            others => '0') 
                             
@@ -209,17 +210,17 @@ begin
             --variable funcResults : FUNCT_ARRAY_INT;
             
             variable valAInt : integer := to_integer(unsigned(valA));
-            variable constInt : integer := to_integer(unsigned(const));
+            variable constInt : integer := to_integer(unsigned(valB));
             
             begin
             funct_to_mux(0) <= valA;
-            funct_to_mux(1) <= const;
+            funct_to_mux(1) <= valB;
             funct_to_mux(2) <= std_logic_vector(unsigned(valAInt + constInt));
             funct_to_mux(3) <= std_logic_vector(unsigned(valAInt - constInt));
             funct_to_mux(4) <= std_logic_vector(unsigned(valAInt * constInt));
             funct_to_mux(5) <= valA srl 1;
             funct_to_mux(6) <= not valA;
-            funct_to_mux(7) <= valA and const;
+            funct_to_mux(7) <= valA and valB;
             
             
             outVal <= muxToOut;
