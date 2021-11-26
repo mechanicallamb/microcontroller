@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 10/21/2021 12:30:35 AM
+-- Create Date: 10/21/2021 04:24:24 AM
 -- Design Name: 
--- Module Name: Control_Unit - Behavioral
+-- Module Name: Demux - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -31,10 +31,45 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity Control_Unit is
---  Port ( );
-end Control_Unit;
 
+entity ControlUnit is 
+	
+		generic(
+		
+			aluControlWordLength : integer;
+			pznLength : integer;
+			constOpLength : integer;
+			instructionLength : integer; --input
+			dataBitLength : integer; 
+			addressSpaceBitLength : integer; --bits to address program memory (Program_Memory_ROM)
+			microProgramAddressBitlength : integer; --num bits to access microOp program address (Program_Address_ROM)
+			branchLogicPZNRegisterBitLength : integer; --bits held by PZN register
+			branchLogicConditionLength : integer;
+			
+		);
+		
+				
+		port(
+				
+		
+		
+		);
+	
+
+end entity;
+
+
+architecture ControlUnitArch of ControlUnit is
+
+
+
+
+	begin
+	
+	
+	
+
+end architecture;
 architecture Behavioral of Control_Unit is
 
 begin
