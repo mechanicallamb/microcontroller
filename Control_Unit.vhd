@@ -1,3 +1,4 @@
+-- Project Name: 
 ----------------------------------------------------------------------------------
 -- Company: 
 -- Engineer: 
@@ -44,7 +45,7 @@ entity ControlUnit is
 			addressSpaceBitLength : integer; --bits to address program memory (Program_Memory_ROM)
 			microProgramAddressBitlength : integer; --num bits to access microOp program address (Program_Address_ROM)
 			branchLogicPZNRegisterBitLength : integer; --bits held by PZN register
-			branchLogicConditionLength : integer;
+			branchLogicConditionLength : integer
 			
 		);
 		
@@ -62,17 +63,9 @@ end entity;
 architecture ControlUnitArch of ControlUnit is
 
 
-
-
 	begin
 	
 	
 	
 
 end architecture;
-architecture Behavioral of Control_Unit is
-
-begin
-
-
-end Behavioral;
