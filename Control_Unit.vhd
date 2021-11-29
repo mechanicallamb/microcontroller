@@ -38,7 +38,7 @@ entity ControlUnit is
 		generic(
 		
 		
-			CU_instructionLength : integer; --input
+			CU_instructionWidth : integer; --input (convert to sum?)
 			CU_opcodeBitWidth : integer;
 		  
 		      --control word length =
@@ -60,17 +60,17 @@ entity ControlUnit is
 	   -- [7:4] OPCODE for function unit
 	   -- [3:1] DA, the register to be written to on a write
 	   -- [0] read or write to register file (read on 0) (write on 1
-			CU_aluControlWordLength : integer;
+			CU_aluControlWordWidth : integer;
 			
 			--control word
 			--constOpLength : integer; = databitwidth
 			CU_dataBitWidth : integer; 
-			CU_registerAddressBitLength : integer;
+			CU_registerAddressBitWidth : integer;
 			
 			--branch logic	
-			CU_pznLength : integer;		
-			CU_branchLogicPZNRegisterBitLength : integer; --bits held by PZN register
-			CU_branchLogicConditionLength : integer;
+			CU_pznWidth : integer;		
+			CU_branchLogicPZNRegisterBitWidth : integer; --bits held by PZN register
+			CU_branchLogicConditionWidth : integer;
 			
 			
 			--program address ROM
@@ -100,23 +100,22 @@ entity ControlUnit is
 				
 		port(
 			
-			CU_instruction : in std_logic_vector((CU_instructionLength - 1) downto 0);
+			CU_instruction : in std_logic_vector((CU_instructionWidth - 1) downto 0);
 			CU_start : in std_logic;
 			CU_clk : in std_logic;
 			CU_reset : in std_logic;
-			
+			CU_PZN : in std_logic_vector((CU_PZNwidth - 1) downto 0);
 			
 			
 			CU_constant : out std_logic_vector((CU_dataBitWidth - 1) downto 0);
 			
 			CU_controlWord : out std_logic_vector(
-			          ((5 + CU_opcodeBitWidth + (CU_registerAddressBitLength * 3)) - 1) 
+			          ((5 + CU_opcodeBitWidth + (CU_registerAddressBitWidth * 3)) - 1) 
 			                             downto 0);
-		    CU_PZN : out std_logic_vector((CU_PZNLength - 1) downto 0);
 		    
 		    CU_MemoryWrite : out std_logic;
 		    
-		    CU_Ready : out std_logic;
+		    CU_Ready : out std_logic
 		
 		);
 	
@@ -217,6 +216,52 @@ component reg is
     );
     
 end component reg;
+
+
+
+-----signals
+
+signal instructionProgramAddress : std_logic_vector((CU_ProgRomAddressBitWidth - 1) downto 0); --instr bits 15:12
+signal instructionConstA : std_logic_vector((CU_dataBitWidth - 1) downto 0); --instr bits 11:8
+signal instructionConstB : std_logic_vector((CU_dataBitWidth - 1) downto 0); --instr bits 7:4
+signal instructionConstC : std_logic_vector((CU_dataBitWidth - 1) downto 0); --instr bits 3:0
+
+--carries the constant to send to alu
+signal constantMuxToALU : std_logic_vector((CU_dataBitWidth - 1) downto 0);
+signal constantMuxSelector : std_logic_vector(2 downto 0); --instruction only supports 3 constants
+
+--program address to jump to
+signal microProgramAddressOut : std_logic_vector((CU_ProgMemoryAddressBitWidth - 1) downto 0);
+
+signal startSignal : std_logic; --begin next instruction?
+signal clk_signal : std_logic; --clock
+signal reset_signal : std_logic; --reset the microcontroller
+signal ready_signal : std_logic; --program counter register
+
+signal branchSignal : std_logic; --output of branch logic unit
+signal branchMode : std_logic; --should the program address controller load a program address or incrememnt
+
+--the next address to branch to when not incremmenting
+signal nextAddressMuxOut : std_logic_vector((CU_ProgMemoryAddressBitWidth - 1) downto 0);
+
+--the next microinstruction to execute (output of program counter unit)
+signal nextMicroInstructionAddr : std_logic_vector((CU_ProgMemoryMicroInstBitWidth - 1) downto 0);
+
+--instruction to execute next clock cycle
+signal nextMicroInstruction : std_logic_vector((CU_instructionWidth - 1) downto 0);
+
+signal controlWordOut : std_logic_vector((CU_aluControlWordWidth - 1) downto 0);
+
+--the condition bits of a branching microinstruction
+signal branchingMicroInstrCondition : std_logic_vector((CU_pznWidth - 1) downto 0);
+--the address to branch to if the branch condition is true
+signal branchingAddress : std_logic_vector((CU_ProgMemoryAddressBitWidth - 1) downto 0);
+
+--input from ALU if last operation was pos, neg, or zero
+signal pznEvaluationFromALUToPznReg : std_logic_vector((CU_pznWidth - 1) downto 0);
+
+--input to branching logic unit from pzn_reg to determine if last operation was pos, neg, or zero
+signal pznRegToBranchLogic : std_logic_vector((CU_pznWidth - 1) downto 0);
 
 
 
