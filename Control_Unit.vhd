@@ -146,7 +146,7 @@ component mux is
 end component mux;
 
 
-
+use work.vector_array.all;
 component demux is
     
     generic(datalength : integer;
