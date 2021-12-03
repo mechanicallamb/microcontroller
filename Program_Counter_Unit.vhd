@@ -33,14 +33,20 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity Program_Counter_Unit is
     
+    generic(
+    
+        addressWidth : integer
+    
+    );
+    
     port(
         mode : in std_logic;
-        J_Addr : in std_logic_vector(7 downto 0);
+        J_Addr : in std_logic_vector((addressWidth - 1) downto 0);
         reset : in std_logic;
         clk : in std_logic;
         
         ready : out std_logic;
-        next_addr : out std_logic_vector(7 downto 0)
+        next_addr : out std_logic_vector((addressWidth - 1) downto 0)
     
     );
     
@@ -68,7 +74,8 @@ architecture Behavioral of Program_Counter_Unit is
 begin
 
 
-     ADDR_COUNTER: counter generic map(bitlength => 8) 
+     ADDR_COUNTER: counter generic map(bitlength => addressWidth) 
+     
         port map(
             
             data_in_count => J_Addr,
