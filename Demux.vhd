@@ -70,7 +70,7 @@ begin
                 data_out(to_integer(unsigned(selector))) <= ( (bitlength - 1) downto 0 => data_in,
                                                               others => '0');
             else 
-                data_out(i) <= "0000";  
+                data_out(i) <= (others => '0');  
             end if;
              
         end loop;

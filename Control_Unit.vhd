@@ -166,13 +166,12 @@ end component demux;
 component Branch_Logic_Unit is
 
     generic(condition_bitlength : integer;
-            pnz_bitlength : integer;
-            compres_bitlength : integer);
+            pzn_bitlength : integer);
     
     port(
     
         condition : in std_logic_vector((condition_bitlength - 1) downto 0);
-        poszeroneg : in std_logic_vector((pnz_bitlength - 1 ) downto 0);
+        poszeroneg : in std_logic_vector((pzn_bitlength - 1 ) downto 0);
         
         branch : out std_logic
          
@@ -184,15 +183,21 @@ end component Branch_Logic_Unit;
 
 component Program_Counter_Unit is
     
+    generic(
+    
+            addressWidth : integer
+            
+            );
+    
     port(
     
         mode : in std_logic;
-        J_Addr : in std_logic_vector(7 downto 0);
+        J_Addr : in std_logic_vector((addressWidth - 1) downto 0);
         reset : in std_logic;
         clk : in std_logic;
         
         ready : out std_logic;
-        next_addr : out std_logic_vector(7 downto 0)
+        next_addr : out std_logic_vector((addressWidth - 1) downto 0)
     
     );
     
@@ -217,6 +222,20 @@ component reg is
     
 end component reg;
 
+component rom is
+        generic(
+            addrWidth_Rom : integer;
+            dataWidth_Rom : integer);
+            
+        port(
+        
+            addrIn_ROM: in std_logic_vector((addrWidth_ROM - 1) downto 0);
+            dataOut_Rom : out std_logic_vector((dataWidth_ROM - 1) downto 0)
+        
+        );
+
+
+end component;
 
 
 -----signals
@@ -239,7 +258,7 @@ signal reset_signal : std_logic; --reset the microcontroller
 signal ready_signal : std_logic; --program counter register
 
 signal branchSignal : std_logic; --output of branch logic unit
-signal branchMode : std_logic; --should the program address controller load a program address or incrememnt
+signal programCounterMode : std_logic; --should the program address controller load a program address or incrememnt
 
 --the next address to branch to when not incremmenting
 signal nextAddressMuxOut : std_logic_vector((CU_ProgMemoryAddressBitWidth - 1) downto 0);
@@ -266,8 +285,158 @@ signal pznRegToBranchLogic : std_logic_vector((CU_pznWidth - 1) downto 0);
 
 
 	begin
-	
-	
-	
+	   
+	   instructionProgramAddress <= 
+	                           CU_instruction((CU_instructionWidth - 1) downto
+	                           (CU_instructionWidth - CU_ProgRomAddressBitWidth));
+	   
+	   controlWordOut <= CU_controlWord;                       
+	                           
+	   controlWordOut(CU_aluControlWordWidth) <= CU_MemoryWrite;
+	                           
+	   constantMuxToALU <= CU_constant;
+	   
+	   
+	   constantMuxSelector <=   controlWordOut(
+	                                        (2 + CU_opcodeBitWidth +
+	                                         2 * CU_registerAddressBitWidth) - 1
+	                                                    
+	                                                  downto 
+	                                                   
+	                                        (2 + CU_opcodeBitWidth +
+	                                         1 * CU_registerAddressBitWidth));
+	   
+	   ConstMux : mux generic map(
+	                       
+	                       dataLength => CU_dataBitWidth,
+	                       selectorLength => CU_registerAddressBitWidth
+	                               
+	                   )
+	                   
+	                   port map(
+	                   
+	                       data_in(1) => CU_instruction((CU_dataBitWidth * 3 - 1) downto
+	                           (CU_dataBitWidth * 2)),
+	                       data_in(2) => CU_instruction((CU_dataBitWidth * 2 - 1) downto
+	                           (CU_dataBitWidth * 1)),
+	                       data_in(3) => CU_instruction((CU_dataBitWidth * 1 - 1) downto
+	                           0),
+	                       
+	                           
+	                       selector => constantMuxSelector,
+	                                  
+	                       
+	                       data_out => constantMuxToAlu
+	                      
+	                   );
+	   
+	   PROGRAM_ADDR_ROM : rom generic map(addrWidth_ROM => CU_ProgRomAddressBitWidth,
+	                                  dataWidth_ROM => CU_ProgMemoryAddressBitWidth)
+	                          
+	                          port map(
+	                                addrIn_ROM => instructionProgramAddress,
+	                                dataOut_ROM => microProgramAddressOut
+	                          );
+	                          
+	                          
+	   
+	   PROGRAM_INSTRUCTION_ROM : rom generic map(addrWidth_ROM => CU_ProgMemoryAddressBitWidth,
+	                                             dataWidth_ROM => CU_ProgMemoryMicroInstBitWidth)
+                                       port map(
+                                             addrIn_Rom => nextMicroInstructionAddr,
+                                             dataOut_ROM => nextMicroInstruction
+                                       );
+            
+	   
+	   --branchingAddress <= nextMicroInstruction(11 downto 4);
+	   --branchingMicroInstrCondition <= nextMicroInstruction(14 downto 12);
+	   AddressMux : mux generic map(datalength => CU_ProgMemoryMicroInstBitWidth,
+	                                selectorLength => 1)
+	                                
+	                                port map(
+	                                       data_in(0) => branchingAddress,
+	                                       data_in(1) => microProgramAddressOut,
+	                                       
+	                                       selector(0) => CU_start,
+	                                                   
+	                                       
+	                                       data_out => nextAddressMuxOut
+	                                       
+	                                       
+	                                );
+	   
+	   programCounterMode <= CU_start or branchSignal;
+	   CU_ready <= ready_signal;
+	   ProgramCounter : Program_Counter_Unit generic map(
+	                                   addressWidth => CU_ProgMemoryAddressBitWidth
+	                               )
+	                               
+	                               port map(
+	                                   
+	                                   J_Addr => nextAddressMuxOut,
+	                                   mode => programCounterMode,
+	                                   reset => CU_reset,
+	                                   clk => CU_clk,
+	                                   ready => ready_signal,
+	                                   next_Addr => nextMicroInstructionAddr
+	                               
+	                               );
+	   
+	   
+	   --insert branching logic register here
+	   
+	   pznEvaluationFromALUToPznReg <= CU_PZN;
+	   BranchRegister : reg generic map(
+	                               
+	                               bitlength => CU_pznWidth
+	                               
+	                        )
+	                        
+	                        port map(
+	                           
+	                           data_in => pznEvaluationFromALUToPZNReg,
+	                           data_out => pznRegToBranchLogic,
+	                           
+	                           asyn_reset => CU_reset,
+	                           clk => CU_clk,
+	                           enable => '1'
+	                        
+	                        );
+	   
+	   BranchLogic : Branch_Logic_Unit generic map(
+	                                   
+	                                   condition_bitlength => CU_branchLogicConditionWidth,
+	                                   pzn_bitlength => CU_pznWidth
+	                                   
+	                                   )
+	                                   
+	                              port map(
+	                              
+	                                   condition => branchingMicroInstrCondition,
+	                                   poszeroneg => pznRegToBranchLogic,
+	                               
+	                                   branch => branchSignal
+	                              );
+	                                   
+	 
+	   MicroInstDemux : demux generic map(
+                                       dataLength => CU_ProgMemoryMicroInstBitWidth,
+                                       selectorLength => 1)
+	                               
+	                               
+	                               port map(
+	                               
+	                                   data_in => nextMicroInstruction,
+	                                   selector => (0 =>
+	                                       nextMicroInstruction(CU_ProgMemoryMicroInstBitWidth - 1),
+	                                       others => '0'),
+	                                       
+	                                   data_out(0) => controlWordOut,
+	                                   data_out(1) => controlWordOut
+	                               
+	                               
+	                               );
+	   
+	   
 
 end architecture;
