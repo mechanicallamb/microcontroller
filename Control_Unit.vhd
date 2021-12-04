@@ -276,6 +276,9 @@ signal branchingMicroInstrCondition : std_logic_vector((CU_pznWidth - 1) downto 
 --the address to branch to if the branch condition is true
 signal branchingAddress : std_logic_vector((CU_ProgMemoryAddressBitWidth - 1) downto 0);
 
+--the output of a branch instruction from the branch demux
+signal branchDemuxOut : std_logic_vector((CU_aluControlWordWidth - 1) downto 0);
+
 --input from ALU if last operation was pos, neg, or zero
 signal pznEvaluationFromALUToPznReg : std_logic_vector((CU_pznWidth - 1) downto 0);
 
@@ -292,7 +295,7 @@ signal pznRegToBranchLogic : std_logic_vector((CU_pznWidth - 1) downto 0);
 	   
 	   controlWordOut <= CU_controlWord;                       
 	                           
-	   controlWordOut(CU_aluControlWordWidth) <= CU_MemoryWrite;
+	   controlWordOut(CU_aluControlWordWidth-1) <= CU_MemoryWrite;
 	                           
 	   constantMuxToALU <= CU_constant;
 	   
@@ -386,7 +389,7 @@ signal pznRegToBranchLogic : std_logic_vector((CU_pznWidth - 1) downto 0);
 	   --insert branching logic register here
 	   
 	   pznEvaluationFromALUToPznReg <= CU_PZN;
-	   BranchRegister : reg generic map(
+	   BranchConditionRegister : reg generic map(
 	                               
 	                               bitlength => CU_pznWidth
 	                               
@@ -417,11 +420,32 @@ signal pznRegToBranchLogic : std_logic_vector((CU_pznWidth - 1) downto 0);
 	                               
 	                                   branch => branchSignal
 	                              );
+
+
+
+	   branchingAddress <= branchDemuxOut((2 + 2 * CU_registerAddressBitWidth +
+	                                                   CU_opcodeBitWidth - 1) 
+	                                      downto
+	                                      
+	                                      (1 + CU_registerAddressBitWidth));
+	                                      	                              
+	                              
+	   branchingMicroInstrCondition <= branchDemuxOut(
+	               
+	                                   (2 + 2 * CU_registerAddressBitWidth +
+	                                                   CU_opcodeBitWidth + CU_branchLogicConditionWidth - 1) 
 	                                   
-	 
+	                                                   downto
+	                                      
+	                                   (2 + 2 * CU_registerAddressBitWidth +
+	                                                   CU_opcodeBitWidth));
+	   
+                    
+	                                      
 	   MicroInstDemux : demux generic map(
                                        dataLength => CU_ProgMemoryMicroInstBitWidth,
-                                       selectorLength => 1)
+                                       selectorLength => 1
+                                       )
 	                               
 	                               
 	                               port map(
@@ -432,7 +456,7 @@ signal pznRegToBranchLogic : std_logic_vector((CU_pznWidth - 1) downto 0);
 	                                       others => '0'),
 	                                       
 	                                   data_out(0) => controlWordOut,
-	                                   data_out(1) => controlWordOut
+	                                   data_out(1) => branchDemuxOut
 	                               
 	                               
 	                               );
