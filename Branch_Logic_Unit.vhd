@@ -33,13 +33,12 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity Branch_Logic_Unit is
     generic(condition_bitlength : integer;
-            pnz_bitlength : integer;
-            compres_bitlength : integer);
+            pzn_bitlength : integer);
     
     port(
     
         condition : in std_logic_vector((condition_bitlength - 1) downto 0);
-        poszeroneg : in std_logic_vector((pnz_bitlength - 1 ) downto 0);
+        poszeroneg : in std_logic_vector((pzn_bitlength - 1 ) downto 0);
         
         branch : out std_logic
          

@@ -43,4 +43,7 @@ package vector_array_d4w16 is new work.array_of_vector_pkg
     generic map(arraysize => 16, bitlength => 4);
 
 package vector_array_d4w2 is new work.array_of_vector_pkg
-    generic map(arraysize => 2, bitlength => 4)
+    generic map(arraysize => 2, bitlength => 4);
+    
+package vector_array_d8w2 is new work.array_of_vector_pkg
+    generic map(arraysize => 2, bitlength => 8);
