@@ -37,7 +37,7 @@ package vector_array is new work.array_of_vector_pkg
 
 --notation is vector_array with data size of 3 bits per vector, 8 vectors wide
 package vector_array_d1w8 is new work.array_of_vector_pkg
-    generic map(arraysize => 8, bitlength = 1);
+    generic map(arraysize => 8, bitlength => 1);
    
 package vector_array_d4w16 is new work.array_of_vector_pkg
     generic map(arraysize => 16, bitlength => 4);
