@@ -21,6 +21,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -32,10 +33,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+
 use work.vector_array.all;
-use IEEE.NUMERIC_STD.ALL;
 
 entity demux is
     
@@ -57,24 +56,14 @@ architecture Behavioral of demux is
 
 begin
     
-    process
+    
+    process(selector)
+        variable selectorInt : integer := (to_integer(unsigned(selector)));
         begin
         
-        
-        --set logic vector != selector to 0
-        for i in (arraysize - 1) downto 0 loop
-        
-            if (i = to_integer(unsigned(selector))) then
-                --the following line probably causes issues if data in is not the same length as data out
-                --figure out how to incorporate others statement
-                data_out(to_integer(unsigned(selector))) <= ( (bitlength - 1) downto 0 => data_in,
-                                                              others => '0');
-            else 
-                data_out(i) <= (others => '0');  
-            end if;
-             
-        end loop;
-        
-    end process;
+         data_out <= ((selectorInt) => data_in,
+                     others => "0");
+                     
+        end process;
 
 end Behavioral;
