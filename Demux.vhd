@@ -42,6 +42,7 @@ entity demux is
             selectorlength : integer);
     
     port(
+    
         data_in : in std_logic_vector((datalength - 1) downto 0);
         selector : in std_logic_vector((selectorlength - 1) downto 0);
         
@@ -57,12 +58,24 @@ architecture Behavioral of demux is
 begin
     
     
-    process(selector)
-        variable selectorInt : integer := (to_integer(unsigned(selector)));
+    process(selector, data_in, data_out)
+    
+        variable selectorInt : integer;
         begin
         
-         data_out <= ((selectorInt) => data_in,
-                     others => "0");
+        selectorInt := to_integer(unsigned(selector));
+         
+         for I in 0 to 2**selectorLength - 1 loop
+            
+            if I = selectorInt then
+                data_out(I) <= data_in after 1 ns;
+            else
+              
+              data_out(I) <= (others => '0') after 20ps;
+             
+            end if;
+            
+         end loop;
                      
         end process;
 
