@@ -21,7 +21,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
+use ieee.numeric_std.all;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 --use IEEE.NUMERIC_STD.ALL;
@@ -70,6 +70,9 @@ architecture Behavioral of Program_Counter_Unit is
         );
     
     end component;
+    
+    
+    signal zero_wire : std_logic := '0';
 
 begin
 
@@ -80,7 +83,7 @@ begin
             
             data_in_count => J_Addr,
             data_out_count => next_addr,
-            carry_out_count => '0',
+            carry_out_count => zero_wire,
             
             asyn_reset_count => reset,
             clk_count => clk,
@@ -91,9 +94,11 @@ begin
         
         
         process
+        
+        variable next_addrInt : integer := to_integer(unsigned(next_addr));
             begin
             
-                if next_addr = (others => '0') then
+                if next_addrInt = 0 then
                     ready <= '1';
                     
                 else

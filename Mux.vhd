@@ -55,11 +55,10 @@ end mux;
 architecture Behavioral of mux is
  
 begin
-    process
-        begin 
+ 
         
-            data_out <= data_in(to_integer(unsigned(selector)));
+            data_out <= data_in(to_integer(unsigned(selector))) after 10ps;
             
-    end process;
+  
 
 end Behavioral;

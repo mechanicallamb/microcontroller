@@ -51,12 +51,15 @@ architecture Behavioral of Comparator is
 
 begin
 
-    process
+    process(operandA, operandB)
         
-        variable operandAInt : integer := to_integer(unsigned(operandA));
-        variable operandBInt : integer := to_integer(unsigned(operandB));
+        variable operandAInt : integer;
+        variable operandBInt : integer;
         
         begin
+        
+        operandAInt := to_integer(unsigned(operandA));
+        operandBInt := to_integer(unsigned(operandB));
         
         if operandAInt > operandBInt then
             output <= (0 => '1', others => '0');
