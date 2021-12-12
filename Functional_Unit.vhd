@@ -22,6 +22,8 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
+use ieee.std_logic_unsigned.all;
+--use ieee.std_logic_arith.all;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 --use IEEE.NUMERIC_STD.ALL;
@@ -94,6 +96,8 @@ signal funcConstIsZ : std_logic;
 
 signal funcAisConst : std_logic;
 
+signal zeroWire : std_logic := '0';
+
 signal muxToOut : std_logic_vector((operandLength - 1) downto 0);
 
 --try implementation using an array of ints and converting to std_logic_vector
@@ -138,8 +142,7 @@ begin
                                     data_in(0) => "0000",
                                     data_in(1) => valA,
                                     
-                                    selector => (0 => funcConstisZ,
-                                                 others => '0'),
+                                    selector(0) => funcConstisZ,
                                     
                                     data_out => funct_to_mux(8)
                                     
@@ -153,8 +156,7 @@ begin
                                           
                                          operandA => "0000",
                                          operandB => valB,
-                                         output => (0=> funcConstisZ,
-                                                    others => '0')
+                                         output(0) => funcConstisZ
 
                                      );
                                  
@@ -168,8 +170,7 @@ begin
                                     data_in(0) => "0001",
                                     data_in(1) => "0000",
                                  
-                                    selector => (0 => funcAisConst,
-                                                 others => '0'),
+                                    selector(0) => funcAisConst,
                                     
                                     data_out => funct_to_mux(9)
                                     
@@ -183,8 +184,7 @@ begin
                                     operandA => valA,
                                     operandB => valB,
                                     
-                                    output => (0 => funcAisConst,
-                                               others => '0')
+                                    output(0) => funcAisConst
                                                
                                      );
                                                  
@@ -196,10 +196,8 @@ begin
                                 operandA => muxToOut,
                                 operandB => "0000",
                                 
-                                --what a dumb way to have to assign things
-                                output => ((2 downto 0) => poszeroneg,
-                                           others => '0') 
-                            
+                                --cannot use aggrigates to set the rest of output to zero if output'length > poszeroneg'length(?)
+                                output(poszeroneg'length - 1 downto 0) => poszeroneg
                             );
         
         
@@ -215,10 +213,10 @@ begin
             begin
             funct_to_mux(0) <= valA;
             funct_to_mux(1) <= valB;
-            funct_to_mux(2) <= std_logic_vector(unsigned(valAInt + constInt));
-            funct_to_mux(3) <= std_logic_vector(unsigned(valAInt - constInt));
-            funct_to_mux(4) <= std_logic_vector(unsigned(valAInt * constInt));
-            funct_to_mux(5) <= valA srl 1;
+            funct_to_mux(2) <= std_logic_vector(to_unsigned(valAInt + constInt, funct_to_mux(2)'length));
+            funct_to_mux(3) <= std_logic_vector(to_unsigned(valAInt - constInt, funct_to_mux(3)'length));
+            funct_to_mux(4) <= std_logic_vector(to_unsigned(valAInt * constInt, funct_to_mux(4)'length));
+            funct_to_mux(5) <= std_logic_vector(shift_right(unsigned(valA), 1));
             funct_to_mux(6) <= not valA;
             funct_to_mux(7) <= valA and valB;
             
