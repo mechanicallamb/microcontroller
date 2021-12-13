@@ -67,9 +67,8 @@ begin
         
         if asyn_reset = '1' then
             data_out <= (others => '0');
-        end if;
         
-        if rising_edge(clk) and load = '1' then
+        elsif rising_edge(clk) and load = '1' and count = '0' then
             data_out <= data_in;
      
         elsif rising_edge(clk) and load = '0' and count = '1' then
