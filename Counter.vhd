@@ -67,22 +67,21 @@ begin
         
         if asyn_reset = '1' then
             data_out <= (others => '0');
-        end if;
         
-        if rising_edge(clk) and load = '1' then
+        elsif rising_edge(clk) and load = '1' and count = '0' then
             data_out <= data_in;
      
         elsif rising_edge(clk) and load = '0' and count = '1' then
             --add
             liminalcount := to_integer(unsigned(data_out));
             liminalcount := liminalcount + 1;
-            data_out <= std_logic_vector(unsigned(liminalcount));
+            data_out <= std_logic_vector(to_unsigned(liminalcount, data_out'length));
         
         elsif rising_edge(clk) and load = '1' and count = '1' then
             --subtract
             liminalcount := to_integer(unsigned(data_out));
             liminalcount := liminalcount - 1;
-            data_out <= std_logic_vector(unsigned(liminalcount));
+            data_out <= std_logic_vector(to_unsigned(liminalcount, data_out'length));
         
         elsif rising_edge(clk) and load = '0' and count = '0' then
             --no-op
