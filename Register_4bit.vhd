@@ -51,28 +51,28 @@ end reg;
 
 architecture Behavioral of reg is
 
-signal reg_value : std_logic_vector((bitlength - 1) downto 0);
+--signal reg_value : std_logic_vector((bitlength - 1) downto 0);
 
 
 begin
+
     
     process(clk, asyn_reset)
         begin
         
-            if asyn_reset then
+            if asyn_reset = '1' then
                
-                reg_value <= "0000";
-                data_out <= reg_value;
-            end if;
+               
+                data_out <= "0000";
             
-            if rising_edge(clk) and enable = '1' and asyn_reset = '0' then
+            elsif rising_edge(clk) and enable = '1' then
                 
-                reg_value <= data_in;
-                data_out <= reg_value;
+           
+                data_out <= data_in;
                 
             end if;
             
     end process;
-
+    
 
 end Behavioral;
