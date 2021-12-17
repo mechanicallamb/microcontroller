@@ -103,7 +103,7 @@ architecture Behavioral of Register_File is
     
 begin
 
-    REG_GEN: for I in 0  to 7 generate
+    REG_GEN: for I in 0 to 7 generate
         REGN: reg generic map(bitlength => 4) port map(
             data_in => data_in_demux_to_regs(I),
             data_out => data_from_regs_to_mux(I),
