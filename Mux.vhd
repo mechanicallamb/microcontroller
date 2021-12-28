@@ -57,7 +57,7 @@ architecture Behavioral of mux is
 begin
  
         
-            data_out <= data_in(to_integer(unsigned(selector))) after 10ps;
+            data_out <= data_in(to_integer(unsigned(selector)));
             
   
 

@@ -47,6 +47,8 @@ entity Register_File is
         
         Out_Data_A : out std_logic_vector(3 downto 0);
         Out_Data_B : out std_logic_vector(3 downto 0)
+        
+        --test_demux : out std_logic_vector(3 downto 0)
     );
 
 end Register_File;
@@ -59,11 +61,11 @@ architecture Behavioral of Register_File is
     component reg is
         generic(bitlength : integer);
         port(
-            data_in : in std_logic_vector((bitlength - 1) downto 0);
-            data_out : out std_logic_vector((bitlength - 1) downto 0);
-            asyn_reset : in std_logic;
-            enable : in std_logic;
-            clk : in std_logic      
+                data_in : in std_logic_vector((bitlength - 1) downto 0);
+                data_out : out std_logic_vector((bitlength - 1) downto 0);
+                asyn_reset : in std_logic;
+                enable : in std_logic;
+                clk : in std_logic      
             );
     end component reg;
     
@@ -100,8 +102,12 @@ architecture Behavioral of Register_File is
     signal data_in_demux_to_regs : array_of_vect;
     signal data_from_regs_to_mux : array_of_vect;
     signal enableSignals : std_logic_vector(7 downto 0);
+
+    
     
 begin
+
+    --test_demux <= data_in_demux_to_regs(0);
 
     REG_GEN: for I in 0 to 7 generate
         REGN: reg generic map(bitlength => 4) port map(
@@ -127,6 +133,8 @@ begin
                     data_out(5) => data_in_demux_to_regs(5),
                     data_out(6) => data_in_demux_to_regs(6),
                     data_out(7) => data_in_demux_to_regs(7)
+                    
+              
                   );
                   
                   
