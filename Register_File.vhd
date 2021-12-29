@@ -32,7 +32,13 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity Register_File is
-
+    
+    generic(
+            addrLength : integer;
+            datalength : integer
+            
+    );
+    
     port(
         
         Destination_Data : in std_logic_vector(3 downto 0);
@@ -69,14 +75,14 @@ architecture Behavioral of Register_File is
             );
     end component reg;
     
-    use work.vector_array.all;
+    use work.mux_array_pkg.all;
     component mux is 
     
         generic(datalength : integer;
                 selectorlength : integer);
         
         port(
-                data_in : in array_of_vect;
+                data_in : in mux_array;
                 selector : in std_logic_vector((selectorlength - 1) downto 0);
                 data_out : out std_logic_vector((datalength - 1) downto 0)              
         );
@@ -92,15 +98,15 @@ architecture Behavioral of Register_File is
         port(
             data_in : in std_logic_vector((datalength - 1) downto 0);
             selector : in std_logic_vector((selectorlength - 1 ) downto 0);
-            data_out : out array_of_vect
+            data_out : out mux_array
             );
        
     end component demux;
     
     --signals--
     
-    signal data_in_demux_to_regs : array_of_vect;
-    signal data_from_regs_to_mux : array_of_vect;
+    signal data_in_demux_to_regs : mux_array(2**addrLength - 1 downto 0)(datalength - 1 downto 0);
+    signal data_from_regs_to_mux : mux_array(2**addrLength - 1 downto 0)(datalength - 1 downto 0);
     signal enableSignals : std_logic_vector(7 downto 0);
 
     
@@ -110,7 +116,7 @@ begin
     --test_demux <= data_in_demux_to_regs(0);
 
     REG_GEN: for I in 0 to 7 generate
-        REGN: reg generic map(bitlength => 4) port map(
+        REGN: reg generic map(bitlength => datalength) port map(
             data_in => data_in_demux_to_regs(I),
             data_out => data_from_regs_to_mux(I),
             clk => clk_regfile,
@@ -120,8 +126,8 @@ begin
         );
        end generate;
    
-    DEMUX_DATA_GEN: demux generic map(datalength => 4,
-                              selectorlength => 3)
+    DEMUX_DATA_GEN: demux generic map(datalength => datalength,
+                              selectorlength => addrLength)
                   port map(
                     data_in => Destination_Data,
                     selector => Destination_Address,
@@ -139,7 +145,7 @@ begin
                   
                   
     DEMUX_ADDRESS_GEN: demux generic map(datalength => 1,
-                              selectorlength => 3)
+                              selectorlength => addrLength)
                   port map(
                     data_in(0) => read_write,
                     selector => Destination_Address,
@@ -154,8 +160,8 @@ begin
                   );
                   
                   
-    MUX_A: mux generic map(datalength => 4,
-                              selectorlength => 3)
+    MUX_A: mux generic map(datalength => datalength,
+                              selectorlength => addrLength)
                   port map(
                    data_in(0) => data_from_regs_to_mux(0),
                    data_in(1) => data_from_regs_to_mux(1),
@@ -174,8 +180,8 @@ begin
                   );
                   
                   
-     MUX_B: mux generic map(datalength => 4,
-                              selectorlength => 3)
+     MUX_B: mux generic map(datalength => dataLength,
+                              selectorlength => addrLength)
                   port map(
                   
                    data_in(0) => data_from_regs_to_mux(0),

@@ -61,7 +61,7 @@ architecture ALUArch of ALU_DATAPATH is
 	end component;
 
 
-	use work.vector_array_d4w2.all;
+	use work.mux_array_pkg.all;
 	component Mux is 
 
 		generic(datalength : integer;
@@ -70,7 +70,7 @@ architecture ALUArch of ALU_DATAPATH is
 
 		port(
 
-			data_in : in array_of_vect; --this is not defined(?)
+			data_in : in mux_array; --this is not defined(?)
 			selector : in std_logic_vector((selectorlength - 1) downto 0);
 
 			data_out : out std_logic_vector((datalength - 1) downto 0)

@@ -34,7 +34,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 
 
-use work.vector_array.all;
+use work.mux_array_pkg.all;
 
 entity demux is
     
@@ -46,7 +46,7 @@ entity demux is
         data_in : in std_logic_vector((datalength - 1) downto 0);
         selector : in std_logic_vector((selectorlength - 1) downto 0);
         
-        data_out : out array_of_vect
+        data_out : out mux_array(2**selectorlength - 1 downto 0)(datalength - 1 downto 0)
         
     );
     
