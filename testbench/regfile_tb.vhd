@@ -30,7 +30,12 @@ architecture tb of regfiletb is
 
 
 component Register_File is
-
+    
+    generic(
+        datalength : integer;
+        addrLength : integer
+    );
+    
     port(
         
         Destination_Data : in std_logic_vector(3 downto 0);
@@ -69,7 +74,13 @@ begin
 
 
 
-	REGF_TB : register_file port map(
+	REGF_TB : register_file generic map(
+	                           datalength => 4,
+	                           addrLength => 3
+	
+	                       )
+	
+	                       port map(
 	
 							destination_data => destData,
 							destination_address => destAddr,
