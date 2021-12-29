@@ -33,17 +33,18 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.vector_array.all;
 use ieee.numeric_std.all;
+use work.mux_array_pkg.all;
 
 entity mux is
 
     generic(datalength : integer;
             selectorlength : integer);
     
+    
     port(
         
-        data_in : in array_of_vect; --this is not defined(?)
+        data_in : in mux_array(2** selectorlength - 1 downto 0)(datalength - 1 downto 0); --this is not defined(?)
         selector : in std_logic_vector((selectorlength - 1) downto 0);
         
         data_out : out std_logic_vector((datalength - 1) downto 0)

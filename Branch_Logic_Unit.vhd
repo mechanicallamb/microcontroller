@@ -48,7 +48,7 @@ end Branch_Logic_Unit;
 
 architecture Behavioral of Branch_Logic_Unit is
 
-use work.vector_array_d1w8.all;
+use work.mux_array_pkg.all;
 component mux is
 
     generic(datalength : integer;
@@ -56,7 +56,7 @@ component mux is
             
     port(
         
-        data_in : in array_of_vect;
+        data_in : in mux_array;
         selector : in std_logic_vector((selectorlength - 1) downto 0);
         
         data_out : out std_logic_vector((datalength - 1) downto 0)
