@@ -44,7 +44,10 @@ entity mux is
     
     port(
         
-        data_in : in mux_array(2** selectorlength - 1 downto 0)(datalength - 1 downto 0); --this is not defined(?)
+        data_in : in mux_array(2** selectorlength - 1 downto 0)(datalength - 1 downto 0);--this line is required or mux outputs opposite value
+                                                                                          --if you want data_in(0), it will give data_in(7)
+                                                                                          --if there are 8 data in vectors and you try to access
+                                                                                          --data_in(0) (and vice versa)
         selector : in std_logic_vector((selectorlength - 1) downto 0);
         
         data_out : out std_logic_vector((datalength - 1) downto 0)
