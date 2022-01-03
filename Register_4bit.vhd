@@ -56,6 +56,7 @@ architecture Behavioral of reg is
 begin
 --if writing on rising edge, must wait til next clock cycle to get register data
 --perhaps conflict with demux assignment process and this reg implementations process
+
     process(clk, asyn_reset)
     
         variable heldValue : integer;
@@ -66,7 +67,7 @@ begin
                 
                 --heldValue := 0;
                 
-                data_out <= "0000";
+                data_out <= (others => '0');
             
             elsif falling_edge(clk) and enable = '1' then        
            
