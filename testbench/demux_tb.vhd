@@ -35,7 +35,7 @@ entity demux_tb is
 --  Port ( );
 end demux_tb;
 
-architecture Behavioral of mux_tb is
+architecture Behavioral of demux_tb is
 
 use work.mux_array_pkg.all;
 component demux is
