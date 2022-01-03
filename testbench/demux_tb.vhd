@@ -31,9 +31,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity mux_tb is
+entity demux_tb is
 --  Port ( );
-end mux_tb;
+end demux_tb;
 
 architecture Behavioral of mux_tb is
 
