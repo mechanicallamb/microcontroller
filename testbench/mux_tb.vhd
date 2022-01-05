@@ -31,59 +31,66 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity demux_tb is
+entity mux_tb is
 --  Port ( );
-end demux_tb;
+end mux_tb;
 
-architecture Behavioral of demux_tb is
+architecture Behavioral of mux_tb is
 
 use work.mux_array_pkg.all;
-component demux is
+component mux is
     
     generic(datalength : integer;
             selectorlength : integer);
     
     port(
     
-        data_in : in std_logic_vector((datalength - 1) downto 0);
+        data_out : out std_logic_vector((datalength - 1) downto 0);
         selector : in std_logic_vector((selectorlength - 1) downto 0);
         
-        data_out : out mux_array(2**selectorlength - 1 downto 0)(datalength - 1 downto 0)
+        data_in : out mux_array(2**selectorlength - 1 downto 0)(datalength - 1 downto 0)
         
     );
     
     
 end component;
 
-signal data_in_tb : std_logic_vector(3 downto 0);
+signal data_out_tb : std_logic_vector(3 downto 0);
 
 type tb_array_type is array (7 downto 0) of std_logic_vector(3 downto 0);
-signal data_out_tb : tb_array_type;
+signal data_in_tb : tb_array_type;
 
 signal select_tb : std_logic_vector(2 downto 0);
 
 
 begin
 
-data_in_tb <= "1001";
+data_in_tb(0) <= "1001";
+data_in_tb(1) <= "1111";
+data_in_tb(2) <= "0001";
+data_in_tb(3) <= "1101";
+data_in_tb(4) <= "0011";
+data_in_tb(5) <= "0101";
+data_in_tb(6) <= "1000";
+data_in_tb(7) <= "1100";
 
-    DEMUX_TB : demux generic map(
+    DEMUX_TB : mux generic map(
                            datalength => 4,
                            selectorlength => 3
                             )
                             
                  port map(
                  
-                    data_out(0) => data_out_tb(0),
-                    data_out(1) => data_out_tb(1),
-                    data_out(2) => data_out_tb(2),
-                    data_out(3) => data_out_tb(3),
-                    data_out(4) => data_out_tb(4),
-                    data_out(5) => data_out_tb(5),
-                    data_out(6) => data_out_tb(6),
-                    data_out(7) => data_out_tb(7),
+                    data_in(0) => data_in_tb(0),
+                    data_in(1) => data_in_tb(1),
+                    data_in(2) => data_in_tb(2),
+                    data_in(3) => data_in_tb(3),
+                    data_in(4) => data_in_tb(4),
+                    data_in(5) => data_in_tb(5),
+                    data_in(6) => data_in_tb(6),
+                    data_in(7) => data_in_tb(7),
                     
-                    data_in => data_in_tb,
+                    data_out => data_out_tb,
                     
                     selector => select_tb
                     
