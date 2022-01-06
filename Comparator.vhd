@@ -61,12 +61,16 @@ begin
         operandAInt := to_integer(unsigned(operandA));
         operandBInt := to_integer(unsigned(operandB));
         
+        
+        
         if operandAInt > operandBInt then
             output <= (0 => '1', others => '0');
         elsif operandAInt = operandBInt then
             output <= (1 => '1', others => '0');
         elsif operandAInt < operandBInt then
             output <= (2 => '1', others => '0');
+        else 
+            output <= (others => '0');
         end if;
         
     end process;

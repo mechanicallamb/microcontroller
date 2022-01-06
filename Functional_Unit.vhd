@@ -37,7 +37,8 @@ entity Functional_Unit is
     
     generic(operandLength : integer;
             opcodeLength : integer;
-            numFunctions : integer);
+            numFunctions : integer;
+            comparatorLength : integer);
     
     port(
     
@@ -93,15 +94,20 @@ end component;
 type FUNCT_ARRAY is array ((numFunctions - 1) downto 0) of 
                         std_logic_vector((operandlength - 1) downto 0);
 
-signal funct_to_mux : FUNCT_ARRAY;
+signal funct_to_mux : FUNCT_ARRAY := (others => (others => '0'));
 
-signal funcConstIsZ : std_logic;
+signal funcConstIsZ : std_logic_vector(comparatorLength - 1 downto 0);
 
-signal funcAisConst : std_logic;
+signal funcAisConst : std_logic_vector(comparatorLength - 1 downto 0);
 
 signal zeroWire : std_logic := '0';
 
 signal muxToOut : std_logic_vector((operandLength - 1) downto 0);
+
+signal zeroVector : std_logic_vector(operandLength - 1 downto 0) := (others => '0');
+
+signal hardWireOne : std_logic_vector(operandLength - 1 downto 0) := (0 => '1',
+                                                                        others => '0'); 
 
 --try implementation using an array of ints and converting to std_logic_vector
 --type FUNCT_ARRAY_INT is array ((numFunctions - 1) downto 0) of 
@@ -117,16 +123,16 @@ begin
                     port map(
                         
                         --hardwire others to 0 later
-                        data_in(1) => funct_to_mux(0),
-                        data_in(2) => funct_to_mux(1),
-                        data_in(3) => funct_to_mux(2),
-                        data_in(4) => funct_to_mux(3),
-                        data_in(5) => funct_to_mux(4),
-                        data_in(6) => funct_to_mux(5),
-                        data_in(7) => funct_to_mux(6),
-                        data_in(8) => funct_to_mux(7),
-                        data_in(9) => funct_to_mux(8),
-                        data_in(10) => funct_to_mux(9),
+                        data_in(0) => funct_to_mux(0),
+                        data_in(1) => funct_to_mux(1),
+                        data_in(2) => funct_to_mux(2),
+                        data_in(3) => funct_to_mux(3),
+                        data_in(4) => funct_to_mux(4),
+                        data_in(5) => funct_to_mux(5),
+                        data_in(6) => funct_to_mux(6),
+                        data_in(7) => funct_to_mux(7),
+                        data_in(8) => funct_to_mux(8),
+                        data_in(9) => funct_to_mux(9),
                         
                         selector => opcode,
                         
@@ -137,91 +143,92 @@ begin
         
         
         --mux for function testing for equality of const and 0,
-        --if oonst == 0, pass A, otherwise pass 0
-        FUNC_C_EQ_ZERO_MUX : mux generic map(dataLength => operandLength,
+        --if const == 0, pass A, otherwise pass 0
+        FUNC_B_EQ_ZERO_MUX : mux generic map(dataLength => operandLength,
                                              selectorLength => 1)
                                  port map(
                                  
-                                    data_in(0) => "0000",
+                                    data_in(0) => zeroVector,
                                     data_in(1) => valA,
                                     
-                                    selector(0) => funcConstisZ,
+                                    selector(0) => funcConstisZ(1),
                                     
-                                    data_out => funct_to_mux(8)
+                                    data_out => funct_to_mux(7)
                                     
                                  );
                                  
-         FUNC_C_EQ_ZERO_COMP : comparator 
-                                generic map(operandBitLength => 4,
-                                            outputBitLength => 1)
+         FUNC_B_EQ_ZERO_COMP : comparator 
+                                generic map(operandBitLength => operandLength,
+                                            outputBitLength => comparatorLength)
                                                       
                                 port map(
                                           
-                                         operandA => "0000",
+                                         operandA => zeroVector,
                                          operandB => valB,
-                                         output(0) => funcConstisZ
+                                         output => funcConstisZ
 
                                      );
                                  
         
         
         --if A = C, pass 0. If not, pass 1 
-        FUNC_A_EQ_C_MUX : mux generic map(dataLength => operandLength,
+        FUNC_A_EQ_B_MUX : mux generic map(dataLength => operandLength,
                                              selectorLength => 1)
                                  port map(
                                  
-                                    data_in(0) => "0001",
-                                    data_in(1) => "0000",
+                                    data_in(0) => hardWireOne,
+                                    data_in(1) => zeroVector,
                                  
-                                    selector(0) => funcAisConst,
+                                    selector(0) => funcAisConst(1),
                                     
-                                    data_out => funct_to_mux(9)
+                                    data_out => funct_to_mux(8)
                                     
                                  );
         
-        FUNC_A_EQ_C_COMP : comparator 
+        FUNC_A_EQ_B_COMP : comparator 
                             generic map(operandBitLength => operandLength,
-                                        outputBitLength => 1)
+                                        outputBitLength => comparatorLength)
                             port map(
                             
                                     operandA => valA,
                                     operandB => valB,
                                     
-                                    output(0) => funcAisConst
+                                    output => funcAisConst
                                                
                                      );
                                                  
         RESULT_COMPARATOR : comparator 
-                            generic map(operandBitLength => 4,
-                                        outputBitLength => 3)
+                            generic map(operandBitLength => operandLength,
+                                        outputBitLength => comparatorLength)
                             port map(
                                 
                                 operandA => muxToOut,
-                                operandB => "0000",
+                                operandB => zeroVector,
                                 
                                 --cannot use aggrigates to set the rest of output to zero if output'length > poszeroneg'length(?)
-                                output(poszeroneg'length - 1 downto 0) => poszeroneg
+                                output => poszeroneg
                             );
         
         
-        process
-            --this could also be done without the mux and just use a case statement
-            --but thats no fun
+--        process(valA, valB)
+--            --this could also be done without the mux and just use a case statement
+--            --but thats no fun
             
-            --variable funcResults : FUNCT_ARRAY_INT;
+--            --variable funcResults : FUNCT_ARRAY_INT;
             
-            variable valAInt : integer := to_integer(unsigned(valA));
-            variable constInt : integer := to_integer(unsigned(valB));
+--            variable valAInt : integer := to_integer(unsigned(valA));
+--            variable constInt : integer := to_integer(unsigned(valB));
             
-            begin
+--            begin
+
             funct_to_mux(0) <= valA;
             funct_to_mux(1) <= valB;
-            funct_to_mux(2) <= std_logic_vector(to_unsigned(valAInt + constInt, funct_to_mux(2)'length));
-            funct_to_mux(3) <= std_logic_vector(to_unsigned(valAInt - constInt, funct_to_mux(3)'length));
-            funct_to_mux(4) <= std_logic_vector(to_unsigned(valAInt * constInt, funct_to_mux(4)'length));
-            funct_to_mux(5) <= std_logic_vector(shift_right(unsigned(valA), 1));
-            funct_to_mux(6) <= not valA;
-            funct_to_mux(7) <= valA and valB;
+            funct_to_mux(2) <= valA + valB;
+            funct_to_mux(3) <= valA - valB;
+--            funct_to_mux(4) <= valA(operandLength / 2 downto 0) * valB(operandLength / 2 downto 0); --//does not support result width large enough for multiplcation
+            funct_to_mux(4) <= valA srl 1;
+            funct_to_mux(5) <= not valA;
+            funct_to_mux(6) <= valA and valB;
             
             
             outVal <= muxToOut;
@@ -229,8 +236,11 @@ begin
             --the result should be mapped in the comparator 
             --and mux instantiations
             
+           
+            
+          
             
             
-        end process;     
+--        end process;     
 
 end Behavioral;
