@@ -88,7 +88,8 @@ architecture ALUArch of ALU_DATAPATH is
 
 		 generic(operandLength : integer;
 		    opcodeLength : integer;
-		    numFunctions : integer);
+		    numFunctions : integer;
+		    comparatorLength : integer);
 
 	    port(
 
@@ -196,7 +197,8 @@ begin
         
         ALU_FUNCTION_UNIT: Functional_Unit generic map(operandLength => 4,
                                                     opcodeLength => 4,
-                                                    numFunctions => 16)
+                                                    numFunctions => 16,
+                                                    comparatorLength => 3)
                                       port map(
                                       
                                         valA => regToFU_OpA,
