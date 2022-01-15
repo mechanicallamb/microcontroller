@@ -41,18 +41,18 @@ entity Register_File is
     
     port(
         
-        Destination_Data : in std_logic_vector(3 downto 0);
-        Destination_Address : in std_logic_vector(2 downto 0);
+        Destination_Data : in std_logic_vector(dataLength - 1 downto 0);
+        Destination_Address : in std_logic_vector(addrLength - 1 downto 0);
         
-        Register_A_Address : in std_logic_vector(2 downto 0);
-        Register_B_Address : in std_logic_vector(2 downto 0);
+        Register_A_Address : in std_logic_vector(addrLength - 1 downto 0);
+        Register_B_Address : in std_logic_vector(addrLength - 1 downto 0);
         
         clk_regfile : in std_logic;
         reset_regfile : in std_logic;
         read_write : in std_logic; --write on 1
         
-        Out_Data_A : out std_logic_vector(3 downto 0);
-        Out_Data_B : out std_logic_vector(3 downto 0)
+        Out_Data_A : out std_logic_vector(dataLength - 1 downto 0);
+        Out_Data_B : out std_logic_vector(dataLength - 1 downto 0)
         
         --test_demux : out std_logic_vector(3 downto 0)
     );
