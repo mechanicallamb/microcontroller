@@ -33,17 +33,21 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.vector_array.all;
 use ieee.numeric_std.all;
+use work.mux_array_pkg.all;
 
 entity mux is
 
     generic(datalength : integer;
             selectorlength : integer);
     
+    
     port(
         
-        data_in : in array_of_vect; --this is not defined(?)
+        data_in : in mux_array(2** selectorlength - 1 downto 0)(datalength - 1 downto 0);--this line is required or mux outputs opposite value
+                                                                                          --if you want data_in(0), it will give data_in(7)
+                                                                                          --if there are 8 data in vectors and you try to access
+                                                                                          --data_in(0) (and vice versa)
         selector : in std_logic_vector((selectorlength - 1) downto 0);
         
         data_out : out std_logic_vector((datalength - 1) downto 0)
@@ -55,11 +59,10 @@ end mux;
 architecture Behavioral of mux is
  
 begin
-    process
-        begin 
+ 
         
             data_out <= data_in(to_integer(unsigned(selector)));
             
-    end process;
+  
 
 end Behavioral;

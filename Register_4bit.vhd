@@ -21,7 +21,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
+use ieee.numeric_std.all;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 --use IEEE.NUMERIC_STD.ALL;
@@ -51,28 +51,34 @@ end reg;
 
 architecture Behavioral of reg is
 
-signal reg_value : std_logic_vector((bitlength - 1) downto 0);
-
+--signal reg_value : std_logic_vector((bitlength - 1) downto 0);
 
 begin
-    
+--if writing on rising edge, must wait til next clock cycle to get register data
+--perhaps conflict with demux assignment process and this reg implementations process
+
     process(clk, asyn_reset)
+    
+        variable heldValue : integer;
         begin
-        
-            if asyn_reset then
-               
-                reg_value <= "0000";
-                data_out <= reg_value;
+            
+            
+            if asyn_reset = '1' then
+                
+                --heldValue := 0;
+                
+                data_out <= (others => '0');
+            
+            elsif falling_edge(clk) and enable = '1' then        
+           
+                --heldvalue := to_integer(unsigned(data_in));
+                data_out <= data_in;
+                
             end if;
             
-            if rising_edge(clk) and enable = '1' and asyn_reset = '0' then
-                
-                reg_value <= data_in;
-                data_out <= reg_value;
-                
-            end if;
+                --data_out <= std_logic_vector(to_unsigned(heldValue, data_out'length));
             
     end process;
-
+    
 
 end Behavioral;

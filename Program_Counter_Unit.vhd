@@ -21,7 +21,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
+use ieee.numeric_std.all;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 --use IEEE.NUMERIC_STD.ALL;
@@ -40,7 +40,8 @@ entity Program_Counter_Unit is
     );
     
     port(
-        mode : in std_logic;
+        load_pcu : in std_logic;
+        count_pcu : in std_logic;
         J_Addr : in std_logic_vector((addressWidth - 1) downto 0);
         reset : in std_logic;
         clk : in std_logic;
@@ -59,41 +60,65 @@ architecture Behavioral of Program_Counter_Unit is
         
         generic (bitlength : integer);
         port(
-            data_in_count : in std_logic_vector((bitlength - 1) downto 0);
-            data_out_count : out std_logic_vector((bitlength - 1) downto 0);
-            carry_out_count : out std_logic;
+            data_in : in std_logic_vector((bitlength - 1) downto 0);
+            data_out : out std_logic_vector((bitlength - 1) downto 0);
+            carry_out : out std_logic;
             
-            asyn_reset_count : in std_logic;
-            clk_count : in std_logic;
-            load_count : in std_logic;
-            count_count : in std_logic
+            asyn_reset : in std_logic;
+            clk : in std_logic;
+            load : in std_logic;
+            count : in std_logic
         );
     
     end component;
+    
+    component Comparator is
+    
+        generic(operandBitlength : integer;
+                outputBitlength : integer);
+                
+        port(
+            
+            operandA : in std_logic_vector((operandBitlength - 1) downto 0);
+            operandB : in std_logic_vector((operandBitlength - 1) downto 0);
+            
+            output : out std_logic_vector((outputBitlength - 1) downto 0)
+            
+            );
+    
+    
+    end component;
+    
+    
+    signal zero_wire : std_logic := '0';
+    
 
 begin
-
+    
+    
 
      ADDR_COUNTER: counter generic map(bitlength => addressWidth) 
      
         port map(
             
-            data_in_count => J_Addr,
-            data_out_count => next_addr,
-            carry_out_count => '0',
+            data_in => J_Addr,
+            data_out => next_addr,
+            carry_out => zero_wire,
             
-            asyn_reset_count => reset,
-            clk_count => clk,
-            load_count => mode,
-            count_count => not(mode)
+            asyn_reset => reset,
+            clk => clk,
+            load => load_pcu,
+            count => count_pcu
             
         );
         
         
-        process
+        process(next_addr)
+        
+        variable next_addrInt : integer := to_integer(unsigned(next_addr));
             begin
             
-                if next_addr = (others => '0') then
+                if next_addrInt = 0 then
                     ready <= '1';
                     
                 else

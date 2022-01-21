@@ -126,7 +126,7 @@ end entity;
 architecture ControlUnitArch of ControlUnit is
 
 
-use work.vector_array.all;
+use work.mux_array_pkg.all;
 component mux is 
 
     generic(datalength : integer;
@@ -134,7 +134,10 @@ component mux is
     
     port(
         
-            data_in : in array_of_vect; --this is not defined(?)
+            data_in : in mux_array(2** selectorlength - 1 downto 0)(datalength - 1 downto 0);--this line is required or mux outputs opposite value
+                                                                                          --if you want data_in(0), it will give data_in(7)
+                                                                                          --if there are 8 data in vectors and you try to access
+                                                                                          --data_in(0) (and vice versa)
             selector : in std_logic_vector((selectorlength - 1) downto 0);
             
             data_out : out std_logic_vector((datalength - 1) downto 0)
@@ -145,7 +148,7 @@ component mux is
 end component mux;
 
 
-use work.vector_array.all;
+use work.mux_array_pkg.all;
 component demux is
     
     generic(datalength : integer;
@@ -155,7 +158,10 @@ component demux is
         data_in : in std_logic_vector((datalength - 1) downto 0);
         selector : in std_logic_vector((selectorlength - 1) downto 0);
         
-        data_out : out array_of_vect
+        data_out : out mux_array(2** selectorlength - 1 downto 0)(datalength - 1 downto 0)--this line is required or mux outputs opposite value
+                                                                                          --if you want data_in(0), it will give data_in(7)
+                                                                                          --if there are 8 data in vectors and you try to access
+                                                                                          --data_in(0) (and vice versa)
         
     );
     
