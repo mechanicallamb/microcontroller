@@ -75,7 +75,7 @@ architecture Behavioral of DATA_STORAGE is
             end loop;
                 
                 return memoryUnit;
-    end function;
+    end loadMemoryFromFile;
     
     impure function InitMemoryFromFile(filename : in string) return MEMORYTYPE is
             
