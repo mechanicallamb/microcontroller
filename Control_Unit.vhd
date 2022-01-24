@@ -42,13 +42,11 @@ entity ControlUnit is
 			CU_opcodeBitWidth : integer;
 		  
 		      --control word length =
-		      -- regfileaddressBits (reg A)            +
-		      -- 1 (constant or register value B)      +
-		      -- regfileAddressBits (reg B)            +
-		      -- 1 (store alu output or load from RAM) + 
+	
 		      -- opcode bitlength                      +
-		      -- regfileAddress Bits (store register D)+
-		      -- 1 (read or write)
+		      -- 1  B reg or constant                  +
+		      -- 1  data from FU or RAM                +
+		      -- 1 (read or write to D_ADDR)
 		      
 		      
 		      
@@ -82,17 +80,24 @@ entity ControlUnit is
 		    
 		    --number of bits for each microinstruction encoding, from Top to bottom, MSB:LSB
 		    --ProgMemoryMicroInstBitWidth =
-		    -- 1 (isBranchInstr?)             +
-		    -- 1 (isPhysicalMemoryStore?)     +
-		    -- registerAddressBitLength (reg A Addr) +
-		    -- 1 (isOperandBConst?)           +
-		    -- registerAddressBitLength (reg B Addr) +
-		    -- 1 (loadDataFromMem?)           +
-		    -- opcodeBitWidth                 +
-		    -- registerAddressBitLength (reg D Addr) +
-		    -- 1 (writeToRegFile?)
-		  
-		    CU_ProgMemoryMicroInstBitWidth : integer
+                
+                
+                --If is not branch istruction
+                    --[11]      is branch?
+                    --[10:8]    reserved
+                    --[7]       is write to ram?
+                    --[6:0]     control word
+                    
+		        --If IS branch instruction
+		           --[11]        is branch?
+		           --[10:3]      next address
+		           --[2:0]       branch condition
+		        
+		        
+		    CU_ProgMemoryMicroInstBitWidth : integer;
+		    
+		    CU_regFileAddressWidth : integer
+		    
 		    
 		    
 		);
@@ -109,13 +114,14 @@ entity ControlUnit is
 			
 			CU_constant : out std_logic_vector((CU_dataBitWidth - 1) downto 0);
 			
-			CU_controlWord : out std_logic_vector(
-			          ((5 + CU_opcodeBitWidth + (CU_registerAddressBitWidth * 3)) - 1) 
-			                             downto 0);
+			CU_controlWord : out std_logic_vector(CU_aluControlWordWidth - 1 downto 0);
 		    
 		    CU_MemoryWrite : out std_logic;
 		    
-		    CU_Ready : out std_logic
+		    CU_Ready : out std_logic;
+		    
+		    CU_alu_Addr_A : out std_logic_vector(CU_regFileAddressWidth - 1 downto 0);
+		    CU_alu_Addr_D : out std_logic_vector(CU_regFileAddressWidth - 1 downto 0)
 		
 		);
 	
@@ -228,32 +234,42 @@ component reg is
     
 end component reg;
 
-component rom is
-        generic(
-            addrWidth_Rom : integer;
-            dataWidth_Rom : integer);
-            
-        port(
-        
-            addrIn_ROM: in std_logic_vector((addrWidth_ROM - 1) downto 0);
-            dataOut_Rom : out std_logic_vector((dataWidth_ROM - 1) downto 0)
-        
-        );
+component DATA_STORAGE is
 
-
+     generic(
+        
+        addressWidth : integer;
+        dataWidth : integer;
+        data_init_file : string --for loading memory such as ROMs
+        
+        
+     );
+     
+     port(
+     
+        address : in std_logic_vector(addressWidth - 1 downto 0);
+        write_enable : in std_logic;
+        clk : in std_logic;
+        dataIn : in std_logic_vector(dataWidth - 1 downto 0);
+        
+        dataOut : out std_logic_vector(dataWidth - 1 downto 0)
+     
+     );
+     
 end component;
+
 
 
 -----signals
 
 signal instructionProgramAddress : std_logic_vector((CU_ProgRomAddressBitWidth - 1) downto 0); --instr bits 15:12
-signal instructionConstA : std_logic_vector((CU_dataBitWidth - 1) downto 0); --instr bits 11:8
-signal instructionConstB : std_logic_vector((CU_dataBitWidth - 1) downto 0); --instr bits 7:4
-signal instructionConstC : std_logic_vector((CU_dataBitWidth - 1) downto 0); --instr bits 3:0
+signal instructionRegA : std_logic_vector((CU_regfileAddressWidth - 1) downto 0); --instr bits 9:7
+signal instructionConstC : std_logic_vector((CU_dataBitWidth - 1) downto 0); --instr bits 6:3
+signal instructionRegD : std_logic_vector((CU_regfileAddressWidth - 1) downto 0); --instr bits 2:0
 
 --carries the constant to send to alu
-signal constantMuxToALU : std_logic_vector((CU_dataBitWidth - 1) downto 0);
-signal constantMuxSelector : std_logic_vector(2 downto 0); --instruction only supports 3 constants
+--signal constantMuxToALU : std_logic_vector((CU_dataBitWidth - 1) downto 0);
+--signal constantMuxSelector : std_logic_vector(2 downto 0); --instruction only supports 3 constants
 
 --program address to jump to
 signal microProgramAddressOut : std_logic_vector((CU_ProgMemoryAddressBitWidth - 1) downto 0);
@@ -275,7 +291,7 @@ signal nextMicroInstructionAddr : std_logic_vector((CU_ProgMemoryMicroInstBitWid
 --instruction to execute next clock cycle
 signal nextMicroInstruction : std_logic_vector((CU_instructionWidth - 1) downto 0);
 
-signal controlWordOut : std_logic_vector((CU_aluControlWordWidth - 1) downto 0);
+signal controlWordOut : std_logic_vector(CU_aluControlWordWidth - 1 downto 0);
 
 --the condition bits of a branching microinstruction
 signal branchingMicroInstrCondition : std_logic_vector((CU_pznWidth - 1) downto 0);
@@ -283,7 +299,7 @@ signal branchingMicroInstrCondition : std_logic_vector((CU_pznWidth - 1) downto 
 signal branchingAddress : std_logic_vector((CU_ProgMemoryAddressBitWidth - 1) downto 0);
 
 --the output of a branch instruction from the branch demux
-signal branchDemuxOut : std_logic_vector((CU_aluControlWordWidth - 1) downto 0);
+signal branchDemuxOut : std_logic_vector((CU_ProgMemoryMicroInstBitWidth - 1) downto 0);
 
 --input from ALU if last operation was pos, neg, or zero
 signal pznEvaluationFromALUToPznReg : std_logic_vector((CU_pznWidth - 1) downto 0);
@@ -291,69 +307,137 @@ signal pznEvaluationFromALUToPznReg : std_logic_vector((CU_pznWidth - 1) downto 
 --input to branching logic unit from pzn_reg to determine if last operation was pos, neg, or zero
 signal pznRegToBranchLogic : std_logic_vector((CU_pznWidth - 1) downto 0);
 
+--signal alu_reg_A : std_logic_vector(CU_regFileAddressWidth - 1 downto 0);
+--signal alu_reg_D : std_logic_vector(CU_regFileAddressWidth - 1 downto 0);
 
+signal zero_wire : std_logic := '0';
+signal one_wire : std_logic := '1';
+
+--output of micro instruction out demux to be split and sent to the alu on a non-branch instruction
+signal microInstDemuxControlOut : std_logic_vector(CU_ProgMemoryMicroInstBitWidth - 2 downto 0);
 
 	begin
 	   
 	   instructionProgramAddress <= 
 	                           CU_instruction((CU_instructionWidth - 1) downto
 	                           (CU_instructionWidth - CU_ProgRomAddressBitWidth));
-	   
-	   controlWordOut <= CU_controlWord;                       
+
+	   instructionRegD <= CU_instruction(CU_regFileAddressWidth - 1 downto 0);
+	   instructionConstC <= CU_instruction(CU_regFileAddressWidth + CU_opcodeBitWidth - 1 downto 0);
+	   instructionRegA <= CU_instruction(2*CU_regFileAddressWidth + CU_opcodeBitWidth - 1 downto 0);
+
 	                           
-	   controlWordOut(CU_aluControlWordWidth-1) <= CU_MemoryWrite;
-	                           
-	   constantMuxToALU <= CU_constant;
+	   controlWordOut <= microInstDemuxControlOut;
+	   
+	   controlWordOut(CU_aluControlWordWidth - 1 downto 0) <= CU_controlWord;                       
+	   controlWordOut(CU_aluControlWordWidth) <= CU_MemoryWrite;
+	  	   
+	   
+--	   constantMuxToALU <= CU_constant;
 	   
 	   
-	   constantMuxSelector <=   controlWordOut(
-	                                        (2 + CU_opcodeBitWidth +
-	                                         2 * CU_registerAddressBitWidth) - 1
+--	   constantMuxSelector <=   controlWordOut(
+--	                                        (2 + CU_opcodeBitWidth +
+--	                                         2 * CU_registerAddressBitWidth) - 1
 	                                                    
-	                                                  downto 
+--	                                                  downto 
 	                                                   
-	                                        (2 + CU_opcodeBitWidth +
-	                                         1 * CU_registerAddressBitWidth));
+--	                                        (2 + CU_opcodeBitWidth +
+--	                                         1 * CU_registerAddressBitWidth));
 	   
-	   ConstMux : mux generic map(
+--	   ConstMux : mux generic map(
 	                       
-	                       dataLength => CU_dataBitWidth,
-	                       selectorLength => CU_registerAddressBitWidth
+--	                       dataLength => CU_dataBitWidth,
+--	                       selectorLength => CU_registerAddressBitWidth
 	                               
-	                   )
+--	                   )
 	                   
-	                   port map(
+--	                   port map(
 	                   
-	                       data_in(1) => CU_instruction((CU_dataBitWidth * 3 - 1) downto
-	                           (CU_dataBitWidth * 2)),
-	                       data_in(2) => CU_instruction((CU_dataBitWidth * 2 - 1) downto
-	                           (CU_dataBitWidth * 1)),
-	                       data_in(3) => CU_instruction((CU_dataBitWidth * 1 - 1) downto
-	                           0),
+--	                       data_in(1) => CU_instruction((CU_dataBitWidth * 3 - 1) downto
+--	                           (CU_dataBitWidth * 2)),
+--	                       data_in(2) => CU_instruction((CU_dataBitWidth * 2 - 1) downto
+--	                           (CU_dataBitWidth * 1)),
+--	                       data_in(3) => CU_instruction((CU_dataBitWidth * 1 - 1) downto
+--	                           0),
 	                       
 	                           
-	                       selector => constantMuxSelector,
+--	                       selector => constantMuxSelector,
 	                                  
 	                       
-	                       data_out => constantMuxToAlu
+--	                       data_out => constantMuxToAlu
 	                      
-	                   );
-	   
-	   PROGRAM_ADDR_ROM : rom generic map(addrWidth_ROM => CU_ProgRomAddressBitWidth,
-	                                  dataWidth_ROM => CU_ProgMemoryAddressBitWidth)
+--	                   );
+        
+        
+        
+        
+        A_ADDRESS_REG : reg generic map(bitlength => CU_regfileAddressWidth)
+                            port map(
+                            
+                                data_in => instructionRegA,
+                                data_out => CU_alu_Addr_A,
+                                
+                                asyn_reset => CU_reset,
+                                clk => CU_clk,
+                                enable => one_wire
+                            
+                            
+                            
+                            );
+                            
+                            
+        D_ADDRESS_REG : reg generic map(bitlength => CU_regfileAddressWidth)
+                            port map(
+                            
+                                data_in => instructionRegA,
+                                data_out => CU_alu_Addr_D,
+                                
+                                asyn_reset => CU_reset,
+                                clk => CU_clk,
+                                enable => one_wire
+                            
+                            
+                            
+                            );	   
+                            
+        CONSTOP_REG : reg generic map(bitlength => CU_dataBitWidth)
+                            port map(
+                            
+                                data_in => instructionConstC,
+                                data_out => CU_constant,
+                                
+                                asyn_reset => CU_reset,
+                                clk => CU_clk,
+                                enable => one_wire
+                            
+                            
+                            
+                            );	                            
+                            
+	    PROGRAM_ADDR_ROM : DATA_STORAGE generic map(addressWidth => CU_ProgRomAddressBitWidth,
+	                                  dataWidth => CU_ProgMemoryAddressBitWidth,
+	                                  data_init_file => "testbench_ProgramRomInit")
 	                          
 	                          port map(
-	                                addrIn_ROM => instructionProgramAddress,
-	                                dataOut_ROM => microProgramAddressOut
+	                                address => instructionProgramAddress,
+	                                write_enable => zero_wire,
+	                                clk => CU_clk,
+	                                dataIn => (others => zero_wire),
+	                                dataOut =>microProgramAddressOut
 	                          );
 	                          
 	                          
 	   
-	   PROGRAM_INSTRUCTION_ROM : rom generic map(addrWidth_ROM => CU_ProgMemoryAddressBitWidth,
-	                                             dataWidth_ROM => CU_ProgMemoryMicroInstBitWidth)
+	    PROGRAM_INSTRUCTION_ROM : DATA_STORAGE generic map(addressWidth => CU_ProgMemoryAddressBitWidth,
+	                                             dataWidth => CU_ProgMemoryMicroInstBitWidth,
+	                                             data_init_file => "testbench_MicroInstROM_INIT")
                                        port map(
-                                             addrIn_Rom => nextMicroInstructionAddr,
-                                             dataOut_ROM => nextMicroInstruction
+                                             address => nextMicroInstructionAddr,
+                                             write_enable => zero_wire,
+                                             clk => CU_clk,
+                                             dataIn => (others => zero_wire),
+                                             dataOut => nextMicroInstruction
                                        );
             
 	   
@@ -429,39 +513,27 @@ signal pznRegToBranchLogic : std_logic_vector((CU_pznWidth - 1) downto 0);
 
 
 
-	   branchingAddress <= branchDemuxOut((2 + 2 * CU_registerAddressBitWidth +
-	                                                   CU_opcodeBitWidth - 1) 
-	                                      downto
-	                                      
-	                                      (1 + CU_registerAddressBitWidth));
+	   branchingMicroInstrCondition <= branchDemuxOut(CU_pznWidth - 1 downto 0);
 	                                      	                              
 	                              
-	   branchingMicroInstrCondition <= branchDemuxOut(
-	               
-	                                   (2 + 2 * CU_registerAddressBitWidth +
-	                                                   CU_opcodeBitWidth + CU_branchLogicConditionWidth - 1) 
-	                                   
-	                                                   downto
-	                                      
-	                                   (2 + 2 * CU_registerAddressBitWidth +
-	                                                   CU_opcodeBitWidth));
+	   branchingAddress <= branchDemuxOut(CU_ProgMemoryMicroInstBitWidth - 2 downto CU_pznWidth);
 	   
                     
 	                                      
 	   MicroInstDemux : demux generic map(
-                                       dataLength => CU_ProgMemoryMicroInstBitWidth,
+                                       dataLength => CU_ProgMemoryMicroInstBitWidth - 1,
                                        selectorLength => 1
                                        )
 	                               
 	                               
 	                               port map(
 	                               
-	                                   data_in => nextMicroInstruction,
+	                                   data_in => nextMicroInstruction(CU_progMemoryMicroInstBitWidth - 2 downto 0),
 	                                   selector => (0 =>
 	                                       nextMicroInstruction(CU_ProgMemoryMicroInstBitWidth - 1),
-	                                       others => '0'),
+	                                       others => zero_wire),
 	                                       
-	                                   data_out(0) => controlWordOut,
+	                                   data_out(0) => microInstDemuxControlOut,
 	                                   data_out(1) => branchDemuxOut
 	                               
 	                               
