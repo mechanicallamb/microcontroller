@@ -89,7 +89,7 @@ architecture Behavioral of DATA_STORAGE is
                    return InitMemoryFromFile(filename);
                 end if;
                 
-    end function;
+    end InitMemoryFromFile;
     
     
     --signal memoryData : MEMORYTYPE := initMemoryFromFile(data_init_file);
