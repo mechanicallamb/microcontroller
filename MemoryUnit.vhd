@@ -60,7 +60,7 @@ end DATA_STORAGE;
 architecture Behavioral of DATA_STORAGE is
 
     type MEMORYTYPE is array(2**addressWidth - 1 downto 0) of bit_vector(dataWidth - 1 downto 0);
-    impure function loadMemoryFromFile (filename : in string) return MEMORYTYPE is
+    impure function loadMemoryFromFile(filename : in string) return MEMORYTYPE is
         
         FILE memoryFile : text open read_mode is filename;
         variable RamFileLine : line;
