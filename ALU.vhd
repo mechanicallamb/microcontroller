@@ -20,16 +20,15 @@ entity ALU_DATAPATH is
 
 	   --ControlWord : in std_logic_vector(15 downto 0);
 	   --Control Word Bit Description
-	   -- [15:13] Reg File Address A for operand A
-	   -- [12] Operand B as constant (case 1) or operand B from reg file address B (case 0)
-	   -- [11:9] Address of regfile register B (regardless of assertion of bit 12)
-	   -- [8] Load data from memory flag (case 0: no, store value from function unit) (case 1: load from ram into regfile address DA)
-	   -- [7:4] OPCODE for function unit
-	   -- [3:1] DA, the register to be written to on a write
+	   -- [6:3] OPCODE for function unit
+	   -- [2] C is const or reg[C]
+	   -- [1] Pass data from FU or RAM
 	   -- [0] read or write to register file (read on 0) (write on 1)
-	  
-
+	   
+	   destinationReg : in std_logic_vector(regAddressWidth_alu - 1 downto 0);
+	   sourceRegA : in std_logic_vector(regAddressWidth_alu - 1 downto 0);
 	   constOp : in std_logic_vector(opcodeWidth_alu - 1 downto 0); 
+	   
 	   clk : in std_logic;
 	   reset : in std_logic;
 	   dataFromRam : in std_logic_vector(dataWidth_alu - 1 downto 0);
@@ -133,24 +132,27 @@ architecture ALUArch of ALU_DATAPATH is
 	
 	
 	--CONTROL WORD SIGNALS
-	signal A_Addr : std_logic_vector(2 downto 0); --bits [15:13]
-	signal B_Addr : std_logic_vector(2 downto 0); --bits [11:9]
-	signal constOrBSelector : std_logic; --wire to const or operand B mux, bit 12
-	signal FUResultOrRAM : std_logic; --wire to selector data from FU or RAM, bit 8
-    signal opcodeSelect : std_logic_vector(3 downto 0); --bits [7:4]
-    signal regfileDestinationAddr : std_logic_vector(2 downto 0); --bits [3:1]
-    signal readOrWrite : std_logic; --read regfile or write to regfile, bit 0
+	signal A_Addr : std_logic_vector(regAddressWidth_alu - 1 downto 0);
+	signal D_Addr : std_logic_vector(regAddressWidth_alu - 1 downto 0); 
+	signal B_Addr : std_logic_vector(regAddressWidth_alu - 1 downto 0);
+	signal constOperand : std_logic_vector(dataWidth_alu - 1 downto 0);
+	signal constOrBSelector : std_logic;
+	signal FUResultOrRAM : std_logic; 
+    signal opcodeSelect : std_logic_vector(opcodeWidth_alu - 1 downto 0);
+    signal readOrWrite : std_logic;
     
 begin
 
     --CONTROL WORD MAPPING
-    A_Addr                  <= ControlWord(15 downto 13);
-    constOrBSelector        <= ControlWord(12);
-    B_Addr                  <= ControlWord(11 downto 9);
-    FUResultOrRam           <= ControlWord(8);
-    opcodeSelect            <= ControlWord(7 downto 4);
-    regFileDestinationAddr  <= ControlWord(3 downto 1);
+    opcodeSelect            <= ControlWord(6 downto 3);
+    constOrBSelector        <= ControlWord(2);
+    FUResultOrRam           <= ControlWord(1);
     readOrWrite             <= ControlWord(0);
+    
+    ConstOperand <= constOp;
+    A_Addr <= sourceRegA;
+    D_Addr <= destinationReg;
+    B_Addr <= constOp(regAddressWidth_alu - 1 downto 0);
     
     dataOut <= operandMuxToFU; --from ALU to ram
     addrOut <= regToFU_OpA; --from ALU to ram
@@ -165,7 +167,7 @@ begin
                     port map(
                     
                             Destination_Data => muxToRegisterFileDest,
-                            Destination_Address => regFileDestinationAddr,
+                            Destination_Address => D_Addr,
                             
                             register_a_Address => A_Addr,
                             register_B_Address => B_Addr,
