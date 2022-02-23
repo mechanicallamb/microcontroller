@@ -1,0 +1,19 @@
+Microprogram
+
+0x00 - no-op / loopback to address 0x00
+0x01 - store constant C into reg address specified by const D --verified
+0x02 - load value from ram address in register const A into register register const D
+0x03 - move value from register A into reg D
+0x04 - write register C into ram address reg A
+0x05 - add register C and A, store into register D
+0x06 - add constnat C and reg A, store into register D
+0x07 - subtract const C from reg A, store into register D
+0x08 - subtract reg C from reg A, store into registe D
+0x09 - right shift reg A by 1 and store in register D
+0x0a - not register const A store into register D
+0x0b - and reg A and reg C
+0x0c - compare const C with 0
+0x0d - compare register A with const C
+0x0e - compare register A with register C
+0x0f - branch if condition true
+       
