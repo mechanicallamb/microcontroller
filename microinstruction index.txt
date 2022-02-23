@@ -1,0 +1,66 @@
+micro instruction index
+
+[11 10 9 8 | 7 6 5 4 | 3 2 1 0]
+
+branch instructions
+[11] Branch Bit
+[10:3] branch address
+[2:0] condition
+
+non-branch instructions
+[11] branch bit
+[10:8] 	 reserved
+[7]		 memory write
+[6:3]	 opcode
+[2] 	 is C Const?
+[1] 	 FU result or load from ram
+[0]		 write regfile
+
+0x000 = no-op
+
+
+0x00D = store constant into register d
+0000 |0 000|1 1 0 1 
+0x00D
+
+0x013 = load value from ramaddr[reg C] and store into reg D
+0000 |0 000|0 0 1 1
+
+0x001 = move value from reg A to reg D
+0000 |0 000|0 0 0 1
+
+0x080 = write value reg A to ram address reg C
+0000 |1 000|0 0 0 0
+
+0x011 = add reg C and reg A and store in reg D
+0000 |0 001|0 0 0 1
+
+0x015 = add const C and reg A and store in reg D
+0000 |0 001|0 1 0 1
+
+0x01D = subtract const C from Reg A, store into reg D
+0000 |0 001|1 1 0 1
+
+0x019 = subtract reg C from Reg A, store into reg D
+0000 |0 001|1 0 0 1
+
+0x021 = right shift reg A and store in D
+0000 |0 010|0 0 0 1
+
+0x029 = not reg A and store in reg D
+0000 |0 010|1 0 0 1
+
+0x031 = and reg A and reg C and store in reg D
+0000 |0 011|0 0 0 1
+
+0x007 = load value from const address C into reg D
+0000 |0 000|0 1 1 1
+
+0x045 = compare reg A with const C
+0000 |0 100|0 1 0 1
+
+0x041 = compare reg A with reg C
+0000 |0 100|0 0 0 1
+
+0x084 = write register A into ram address[const C]
+0000 |1 000|0 1 0 0
