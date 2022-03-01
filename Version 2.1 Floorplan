@@ -1,0 +1,6 @@
+The following functionalities are proposed to be incorporated into the 2.1 version of the microcontroller:
+
+SPI Interface or some offboard communications interface
+Program Counter capable of instruction address access control
+Multiplication / division
+Floating point operations
