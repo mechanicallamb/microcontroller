@@ -122,7 +122,7 @@ begin
 
     --test_demux <= data_in_demux_to_regs(0);
 
-    REG_GEN: for I in 0 to 7 generate
+    REG_GEN: for I in 0 to (2**addrLength - 1) generate
         
         ZERO_REG: if I = 0 generate
             REG0: reg generic map(bitLength => datalength)
