@@ -114,7 +114,8 @@ architecture Behavioral of Register_File is
     signal data_in_demux_to_regs : mux_array(2**addrLength - 1 downto 0)(datalength - 1 downto 0);
     signal data_from_regs_to_mux : mux_array(2**addrLength - 1 downto 0)(datalength - 1 downto 0);
     signal enableSignals : std_logic_vector(7 downto 0);
-
+    
+    signal zero_wire : std_logic_vector(2**dataLength - 1 downto 0) := (others => '0');
     
     
 begin
@@ -122,15 +123,29 @@ begin
     --test_demux <= data_in_demux_to_regs(0);
 
     REG_GEN: for I in 0 to 7 generate
-        REGN: reg generic map(bitlength => datalength) port map(
-            data_in => data_in_demux_to_regs(I),
-            data_out => data_from_regs_to_mux(I),
-            clk => clk_regfile,
-            asyn_reset => reset_regfile,
-            enable => enableSignals(I)
-            
-        );
-       end generate;
+        
+        ZERO_REG: if I = 0 generate
+            REG0: reg generic map(bitLength => datalength)
+                        port map(
+                            data_in => zero_wire,
+                            data_out => data_from_regs_to_mux(I),
+                            clk => clk_regfile,
+                            asyn_reset => reset_regfile,
+                            enable => '0'
+                        );
+            end generate;
+        
+        REGN: if I > 0 generate
+             REG_I : reg generic map(bitlength => datalength)
+                             port map(
+                                data_in => data_in_demux_to_regs(I),
+                                data_out => data_from_regs_to_mux(I),
+                                clk => clk_regfile,
+                                asyn_reset => reset_regfile,
+                                enable => enableSignals(I) 
+                            );
+        end generate;
+    end generate;
    
     DEMUX_DATA_GEN: demux generic map(datalength => datalength,
                               selectorlength => addrLength)
