@@ -4,3 +4,4 @@ SPI Interface or some offboard communications interface
 Program Counter capable of instruction address access control
 Multiplication / division
 Floating point operations
+PWM functionality
